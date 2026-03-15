@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TautulliCatalogue — Présentation Reddit</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0d14;
+    --surface:  #13131f;
+    --card:     #1a1a2e;
+    --border:   #252540;
+    --accent:   #e94560;
+    --accent2:  #0f3460;
+    --gold:     #f5a623;
+    --text:     #eaeaea;
+    --muted:    #7070a0;
+    --code-bg:  #0a0a12;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    line-height: 1.6;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    border-left: 3px solid var(--accent);
+    padding-left: 20px;
+    margin-bottom: 40px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  /* ── BADGES ── */
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 24px 0 36px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid;
+    letter-spacing: 1px;
+  }
+
+  .badge-red   { color: var(--accent); border-color: var(--accent); background: rgba(233,69,96,0.08); }
+  .badge-blue  { color: #5b9cff;       border-color: #5b9cff;       background: rgba(91,156,255,0.08); }
+  .badge-gold  { color: var(--gold);   border-color: var(--gold);   background: rgba(245,166,35,0.08); }
+  .badge-green { color: #3ddc84;       border-color: #3ddc84;       background: rgba(61,220,132,0.08); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── SCREENSHOT AREA ── */
+  .screenshot-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+
+  .screenshot-bar {
+    background: #1a1a2e;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot-red   { background: var(--accent); }
+  .dot-gray  { background: #333; }
+
+  .bar-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .screenshot-body {
+    padding: 24px;
+    display: grid;
+    gap: 12px;
+  }
+
+  /* Simulated UI elements */
+  .ui-row { display: flex; align-items: center; gap: 12px; }
+
+  .ui-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .ui-select {
+    flex: 1;
+    background: #0f0f1a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ui-select span { color: var(--muted); font-size: 10px; }
+
+  .ui-progress-wrap { flex: 1; }
+  .ui-progress-track {
+    background: #0f0f1a;
+    border-radius: 99px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .ui-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 2.5s ease;
+  }
+
+  .ui-log {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+    min-height: 72px;
+  }
+
+  .ui-log .log-active { color: var(--text); }
+  .ui-log .log-ok { color: #3ddc84; }
+
+  .ui-btn-row { display: flex; gap: 10px; margin-top: 4px; }
+
+  .ui-btn {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: default;
+  }
+
+  .ui-btn-primary { background: var(--accent); color: white; flex: 2; }
+  .ui-btn-secondary { background: #1e2d4a; color: var(--muted); flex: 1; border: 1px solid var(--border); }
+  .ui-btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+  /* ── FEATURES GRID ── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover { border-color: var(--accent); }
+
+  .feature-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .feature-card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .feature-card p {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  /* ── INSTALL ── */
+  .install-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+
+  .install-header {
+    background: var(--code-bg);
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 2px;
+  }
+
+  .install-body { padding: 20px; display: grid; gap: 10px; }
+
+  .cmd-line {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cmd-prompt { color: var(--accent); user-select: none; }
+  .cmd-text   { color: #a0cfff; }
+  .cmd-comment { color: var(--muted); font-size: 11px; margin-left: auto; }
+
+  /* ── DOWNLOAD ── */
+  .download-section {
+    text-align: center;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    padding: 16px 40px;
+    border-radius: 4px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .download-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  }
+
+  .download-btn:hover { background: #c73550; transform: translateY(-1px); }
+  .download-btn:active { transform: translateY(0); }
+
+  .download-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  .download-note {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── INFO STRIP ── */
+  .info-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .info-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .info-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .info-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .footer-left {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .footer-links { display: flex; gap: 20px; }
+
+  .footer-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-link:hover { color: var(--accent); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── REDDIT COPY BLOCK ── */
+  .reddit-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.28s ease both;
+  }
+
+  .reddit-block .section-title { border-color: rgba(245,166,35,0.3); }
+
+  .reddit-md {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #a0a0c0;
+    line-height: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .reddit-md .md-h1  { color: var(--text); font-weight: 700; font-size: 14px; }
+  .reddit-md .md-h2  { color: #7090ff; font-weight: 700; }
+  .reddit-md .md-bold { color: var(--text); }
+  .reddit-md .md-link { color: var(--accent); text-decoration: none; }
+  .reddit-md .md-link:hover { text-decoration: underline; }
+  .reddit-md .md-code { background: #1a1a2e; padding: 1px 6px; border-radius: 3px; color: #a0cfff; }
+
+  .copy-btn {
+    margin-top: 14px;
+    background: #1e2d4a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .copy-btn.copied { border-color: #3ddc84; color: #3ddc84; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="tag">// Open Source Tool</div>
+    <h1>Tautulli<span>Catalogue</span></h1>
+    <p class="subtitle">Génère un catalogue PDF illustré de ta bibliothèque Plex via Tautulli</p>
+  </div>
+
+  <!-- BADGES -->
+  <div class="badges">
+    <span class="badge badge-red">Python 3.x</span>
+    <span class="badge badge-blue">Tautulli API</span>
+    <span class="badge badge-green">Plex Media Server</span>
+    <span class="badge badge-gold">Windows / Linux / Mac</span>
+    <span class="badge badge-red">CustomTkinter GUI</span>
+    <span class="badge badge-blue">ReportLab PDF</span>
+  </div>
+
+  <!-- SIMULATED APP SCREENSHOT -->
+  <div class="screenshot-box">
+    <div class="screenshot-bar">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-gray"></div>
+      <div class="dot dot-gray"></div>
+      <span class="bar-title">Tautulli — Catalogue PDF</span>
+    </div>
+    <div class="screenshot-body">
+      <div class="ui-row">
+        <span class="ui-label">Bibliotheque</span>
+        <div class="ui-select">Films — Ma Bibliothèque <span>696 titres ▾</span></div>
+      </div>
+      <div class="ui-row">
+        <span class="ui-label">Dossier de sortie</span>
+        <div class="ui-select" style="flex:1; font-size:11px;">C:\Users\...\Desktop <span style="color:#e94560">Choisir</span></div>
+      </div>
+      <div class="ui-row">
+        <span class="ui-label">Progression</span>
+        <div class="ui-progress-wrap">
+          <div class="ui-progress-track">
+            <div class="ui-progress-fill" id="demo-bar"></div>
+          </div>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-left:10px;" id="demo-count">347 / 696</span>
+      </div>
+      <div class="ui-log" id="demo-log">
+        <div>[345/696]  Minority Report</div>
+        <div>[346/696]  Midsommar</div>
+        <div class="log-active">[347/696]  Mission: Impossible...</div>
+        <div class="log-ok" id="done-line" style="display:none">✓  PDF cree : catalogue_Films.pdf</div>
+      </div>
+      <div class="ui-btn-row">
+        <div class="ui-btn ui-btn-primary">Exporter en PDF</div>
+        <div class="ui-btn ui-btn-secondary">Annuler</div>
+        <div class="ui-btn ui-btn-ghost">Quitter</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <p class="section-title">Fonctionnalités</p>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">🎬</div>
+      <h3>Catalogue illustré</h3>
+      <p>Chaque film ou série avec son poster, synopsis, réalisateur, acteurs, durée et note.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <h3>Toutes les bibliothèques</h3>
+      <p>Films, séries, musique, photos — sélection depuis l'interface au lancement.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚙️</div>
+      <h3>Config sauvegardée</h3>
+      <p>L'URL et la clé API sont stockées dans un fichier JSON. Plus besoin de toucher au code.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🖥️</div>
+      <h3>Interface graphique</h3>
+      <p>Application native dark mode avec barre de progression et journal en temps réel.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📄</div>
+      <h3>PDF professionnel</h3>
+      <p>Design sombre, page de couverture, posters, tri alphabétique. Prêt à imprimer.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔌</div>
+      <h3>Connexion directe</h3>
+      <p>Appelle l'API Tautulli pour récupérer les métadonnées et posters directement depuis Plex.</p>
+    </div>
+  </div>
+
+  <!-- INSTALL -->
+  <p class="section-title">Installation (version script Python)</p>
+  <div class="install-box">
+    <div class="install-header">TERMINAL / CMD</div>
+    <div class="install-body">
+      <div class="cmd-line">
+        <span class="cmd-prompt">$</span>
+        <span class="cmd-text">pip install requests reportlab pillow customtkinter</span>
+        <span class="cmd-comment"># dépendances</span>
+      </div>
+      <div class="cmd-line">
+        <span class="cmd-prompt">$</span>
+        <span class="cmd-text">python tautulli_catalogue_gui.py</span>
+        <span class="cmd-comment"># lancement</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="info-strip">
+    <div class="info-item">
+      <div class="info-value">696</div>
+      <div class="info-key">films testés</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value">0</div>
+      <div class="info-key">dépendance Plex</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value">~30s</div>
+      <div class="info-key">par 100 films</div>
+    </div>
+    <div class="info-item">
+      <div class="info-value">100%</div>
+      <div class="info-key">open source</div>
+    </div>
+  </div>
+
+  <!-- REDDIT POST PREVIEW -->
+  <p class="section-title">Texte pour Reddit</p>
+  <div class="reddit-block">
+    <div class="reddit-md" id="reddit-text"><span class="md-h1">🎬 TautulliCatalogue — Génère un catalogue PDF illustré de ta bibliothèque Plex</span>
+
+<span class="md-bold">Salut r/PleX !</span>
+
+J'ai développé un petit outil open source qui se connecte à votre instance <span class="md-bold">Tautulli</span> et génère un catalogue PDF de votre bibliothèque Plex avec :
+
+<span class="md-h2">✨ Ce que ça fait</span>
+- 📄 PDF avec <span class="md-bold">poster + titre + synopsis + réalisateur + acteurs + note</span> pour chaque titre
+- 🎨 Design dark mode avec page de couverture automatique
+- 📚 Compatible <span class="md-bold">Films, Séries, Musique</span>
+- 🖥️ Interface graphique native (plus besoin de toucher au code)
+- ⚙️ Config sauvegardée (URL Tautulli + clé API) dans un fichier JSON
+
+<span class="md-h2">📦 Installation</span>
+<span class="md-code">pip install requests reportlab pillow customtkinter</span>
+<span class="md-code">python tautulli_catalogue_gui.py</span>
+
+La fenêtre de config s'ouvre automatiquement au premier lancement.
+Un bouton <span class="md-bold">"Paramètres"</span> permet de changer l'URL/clé à tout moment.
+
+<span class="md-h2">📥 Téléchargement (exe Windows — aucune installation requise)</span>
+➡️ <a class="md-link" href="https://1fichier.com/?gktxcu9a0v6o1dqk3rem">https://1fichier.com/?gktxcu9a0v6o1dqk3rem</a>
+
+<span class="md-h2">⚠️ Prérequis</span>
+- Tautulli installé et accessible en réseau
+- Python 3.x (version script uniquement)
+
+Testé avec <span class="md-bold">696 films</span>. Fonctionne aussi pour les séries.
+N'hésitez pas à remonter vos bugs ou suggestions ! 🙏</div>
+    <button class="copy-btn" id="copy-btn" onclick="copyReddit()">📋 Copier le texte brut pour Reddit</button>
+  </div>
+
+  <!-- DOWNLOAD -->
+  <div class="download-section">
+    <a href="https://1fichier.com/?gktxcu9a0v6o1dqk3rem" class="download-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Télécharger TautulliCatalogue.exe
+    </a>
+    <p class="download-note">Windows 10/11 · ~35 Mo · Aucune installation requise</p>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-left">TautulliCatalogue · Open Source · 2025</div>
+    <div class="footer-links">
+      <a href="#" class="footer-link">GitHub</a>
+      <a href="#" class="footer-link">r/PleX</a>
+      <a href="#" class="footer-link">Tautulli</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Animate progress bar on load
+  setTimeout(() => {
+    document.getElementById('demo-bar').style.width = '50%';
+  }, 400);
+
+  // Simulate completion after 3s
+  setTimeout(() => {
+    document.getElementById('demo-bar').style.width = '100%';
+    document.getElementById('demo-count').textContent = '696 / 696';
+    document.getElementById('done-line').style.display = 'block';
+  }, 3200);
+
+  // Reddit copy
+  const rawText = `🎬 TautulliCatalogue — Génère un catalogue PDF illustré de ta bibliothèque Plex
+
+Salut r/PleX !
+
+J'ai développé un petit outil open source qui se connecte à votre instance **Tautulli** et génère un catalogue PDF de votre bibliothèque Plex avec :
+
+## ✨ Ce que ça fait
+- 📄 PDF avec **poster + titre + synopsis + réalisateur + acteurs + note** pour chaque titre
+- 🎨 Design dark mode avec page de couverture automatique
+- 📚 Compatible **Films, Séries, Musique**
+- 🖥️ Interface graphique native (plus besoin de toucher au code)
+- ⚙️ Config sauvegardée (URL Tautulli + clé API) dans un fichier JSON
+
+## 📦 Installation
+\`pip install requests reportlab pillow customtkinter\`
+\`python tautulli_catalogue_gui.py\`
+
+La fenêtre de config s'ouvre automatiquement au premier lancement.
+Un bouton **"Paramètres"** permet de changer l'URL/clé à tout moment.
+
+## 📥 Téléchargement (exe Windows — aucune installation requise)
+➡️ https://1fichier.com/?gktxcu9a0v6o1dqk3rem
+
+## ⚠️ Prérequis
+- Tautulli installé et accessible en réseau
+- Python 3.x (version script uniquement)
+
+Testé avec **696 films**. Fonctionne aussi pour les séries.
+N'hésitez pas à remonter vos bugs ou suggestions ! 🙏`;
+
+  function copyReddit() {
+    navigator.clipboard.writeText(rawText).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✅ Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copier le texte brut pour Reddit';
+        btn.classList.remove('copied');
+      }, 2500);
+    });
+  }
+</script>
+</body>
+</html>
